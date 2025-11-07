@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание ВУЗа - Юридический факультет</title>
+    <meta name="description" content="Актуальное расписание занятий для юридического факультета. Удобное представление расписания по неделям и дням.">
+    <meta name="keywords" content="расписание, вуз, университет, занятия, пары, юридический факультет, учебное расписание">
+    <meta name="author" content="Ваше Имя">
+    
+    <!-- Структурированные данные для SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Расписание ВУЗа",
+      "description": "Онлайн-СИСЬКИ И ЯЙЦА",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Any",
+      "permissions": "browser"
+    }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .tabs-container {
+            background: #34495e;
+        }
+        
+        .week-tabs {
+            display: flex;
+            background: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            flex-wrap: wrap;
+        }
+        
+        .week-tab {
+            padding: 12px 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            min-width: 120px;
+        }
+        
+        .week-tab.active {
+            background: #3498db;
+            box-shadow: inset 0 5px 0 #2980b9;
+        }
+        
+        .week-tab:hover {
+            background: #2980b9;
+        }
+        
+        .days-tabs {
+            display: flex;
+            background: #ecf0f1;
+            flex-wrap: wrap;
+        }
+        
+        .day-tab {
+            padding: 12px 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            text-align: center;
+            border-right: 1px solid #d5dbdb;
+            font-weight: 600;
+            font-size: 0.85rem;
+            min-width: 90px;
+        }
+        
+        .day-tab:last-child {
+            border-right: none;
+        }
+        
+        .day-tab.active {
+            background: #3498db;
+            color: white;
+            box-shadow: inset 0 3px 0 #2980b9;
+        }
+        
+        .day-tab:hover {
+            background: #d6e6f2;
+        }
+        
+        .schedule-content {
+            padding: 20px;
+            min-height: 500px;
+        }
+        
+        .day-title {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
+            font-size: 1.3rem;
+        }
+        
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .schedule-table th {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .schedule-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+        }
+        
+        .schedule-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .schedule-table tr:hover {
+            background: #f0f8ff;
+        }
+        
+        .schedule-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .pair-number {
+            font-weight: bold;
+            color: #2c3e50;
+            width: 50px;
+            text-align: center;
+        }
+        
+        .time-cell {
+            width: 120px;
+            font-weight: 600;
+            color: #3498db;
+        }
+        
+        .subject-cell {
+            font-weight: 500;
+        }
+        
+        .room-cell {
+            width: 100px;
+            text-align: center;
+            font-weight: 600;
+            color: #e74c3c;
+        }
+        
+        .empty-cell {
+            text-align: center;
+            color: #95a5a6;
+            font-style: italic;
+        }
+        
+        .day-schedule {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .day-schedule.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Мобильная адаптация */
+        @media (max-width: 768px) {
+            .week-tab, .day-tab {
+                min-width: 100%;
+                flex: 0 0 100%;
+            }
+            
+            .day-tab {
+                border-right: none;
+                border-bottom: 1px solid #d5dbdb;
+            }
+            
+            .schedule-table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                padding: 8px 6px;
+                font-size: 0.85rem;
+            }
+            
+            .time-cell {
+                width: 100px;
+            }
+            
+            .schedule-content {
+                padding: 15px;
+            }
+            
+            header {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                border-radius: 10px;
+            }
+            
+            header {
+                padding: 12px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .schedule-table {
+                font-size: 0.8rem;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                padding: 6px 4px;
+                font-size: 0.8rem;
+            }
+            
+            .day-title {
+                font-size: 1.2rem;
+            }
+            
+            .week-tab, .day-tab {
+                padding: 10px 5px;
+                font-size: 0.8rem;
+            }
+            
+            .pair-number {
+                width: 40px;
+            }
+            
+            .time-cell {
+                width: 90px;
+            }
+            
+            .room-cell {
+                width: 80px;
+            }
+        }
+        
+        /* Для очень маленьких экранов */
+        @media (max-width: 360px) {
+            .schedule-table {
+                font-size: 0.75rem;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                padding: 5px 3px;
+                font-size: 0.75rem;
+            }
+            
+            .time-cell {
+                width: 80px;
+            }
+            
+            .room-cell {
+                width: 70px;
+            }
+            
+            h1 {
+                font-size: 1.3rem;
+            }
+            
+            .day-title {
+                font-size: 1.1rem;
+            }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: white;
+            font-size: 0.85rem;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Расписание ВУЗа</h1>
+            <p class="subtitle">Выберите неделю и день для просмотра расписания занятий</p>
+            <p class="subtitle">БОЛЬШИЕ СИСЬКИ БОЛЬШИЕ ЯЙЦА</p>
+        </header>
+
+        <div class="tabs-container">
+            <div class="week-tabs">
+                <div class="week-tab active" data-week="1">Неделя 1</div>
+                <div class="week-tab" data-week="2">Неделя 2</div>
+            </div>
+
+            <div class="days-tabs">
+                <div class="day-tab active" data-day="monday">Пн</div>
+                <div class="day-tab" data-day="tuesday">Вт</div>
+                <div class="day-tab" data-day="wednesday">Ср</div>
+                <div class="day-tab" data-day="thursday">Чт</div>
+                <div class="day-tab" data-day="friday">Пт</div>
+            </div>
+        </div>
+
+        <div class="schedule-content">
+            <!-- Неделя 1 -->
+            <div class="week-schedule" data-week="1">
+                <!-- Понедельник -->
+                <div class="day-schedule active" data-day="monday">
+                    <h2 class="day-title">Понедельник - Неделя 1</h2>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Время</th>
+                                <th>Предмет</th>
+                                <th>Аудитория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             <tr>
+                                <td class="pair-number">1</td>
+                                <td class="time-cell">8:30-10:00</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">2</td>
+                                <td class="time-cell">10:10-11:40</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">3</td>
+                                <td class="time-cell">12:20-13:50</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">4</td>
+                                <td class="time-cell">14:00-15:30</td>
+                                <td class="subject-cell">ОСНОВЫ ВОЕННОЙ ПОДГОТОВКИ</td>
+                                <td class="room-cell">Московская область, городской округ Лосино-Петровский</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">5</td>
+                                <td class="time-cell">15:40-17:10</td>
+                                <td class="subject-cell">ОСНОВЫ ВОЕННОЙ ПОДГОТОВКИ</td>
+                                <td class="room-cell">Московская область, городской округ Лосино-Петровский</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Вторник -->
+                <div class="day-schedule" data-day="tuesday">
+                    <h2 class="day-title">Вторник - Неделя 1</h2>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Время</th>
+                                <th>Предмет</th>
+                                <th>Аудитория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="pair-number">1</td>
+                                <td class="time-cell">8:30-10:00</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">2</td>
+                                <td class="time-cell">10:10-11:40</td>
+                                <td class="subject-cell"> лек. Информационные технологии в юридической деятельности
+доц. Дмитриева Е.Е.</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">3</td>
+                                <td class="time-cell">12:20-13:50</td>
+                                <td class="subject-cell">лек. Теория государства и права 
+Кожокарь И.П.</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">4</td>
+                                <td class="time-cell">14:00-15:30</td>
+                                <td class="subject-cell">Теория государства и права
+Кожокарь И.П.</td>
+                                <td class="room-cell">Ауд. 3134</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">5</td>
+                                <td class="time-cell">15:40-17:10</td>
+                                <td class="subject-cell">Правоохранительные
+органы
+доц. Виноградова О.Б</td>
+                                <td class="room-cell">Ауд. 3134</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Среда -->
+                <div class="day-schedule" data-day="wednesday">
+                    <h2 class="day-title">Среда - Неделя 1</h2>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Время</th>
+                                <th>Предмет</th>
+                                <th>Аудитория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="pair-number">1</td>
+                                <td class="time-cell">8:30-10:00</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">Ауд. - </td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">2</td>
+                                <td class="time-cell">10:10-11:40</td>
+                                <td class="subject-cell">История государства и
+права зарубежных стран
+доц.Гаприндашвили Р.Т.</td>
+                                <td class="room-cell">Ауд. 3101     </td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">3</td>
+                                <td class="time-cell">12:20-13:50</td>
+                                <td class="subject-cell">лек. Правоохранительные органы
+доц. Виноградова О.Б</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">4</td>
+                                <td class="time-cell">14:00-15:30</td>
+                                <td class="subject-cell">ФИЗКУЛЬТУРА И СПОРТ</td>
+                                <td class="room-cell">Спортзал</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">5</td>
+                                <td class="time-cell">15:40-17:10</td>
+                                <td class="subject-cell">Иностран.
+язык
+Королева</td>
+                                <td class="room-cell">Ауд. 2326 1 подгруппа [2328 2 подгруппа]</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Четверг -->
+                <div class="day-schedule" data-day="thursday">
+                    <h2 class="day-title">Четверг - Неделя 1</h2>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Время</th>
+                                <th>Предмет</th>
+                                <th>Аудитория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="pair-number">1</td>
+                                <td class="time-cell">8:30-10:00</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">2</td>
+                                <td class="time-cell">10:10-11:40</td>
+                                <td class="subject-cell">лек. Юридическая психология
+доц. Борисова М.В.</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">3</td>
+                                <td class="time-cell">12:20-13:50</td>
+                                <td class="subject-cell">Логика
+ст.пр. Моисеева Е.М.</td>
+                                <td class="room-cell">Ауд. 2136</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">4</td>
+                                <td class="time-cell">14:00-15:30</td>
+                                <td class="subject-cell">лек. Логика
+ст.пр. Моисеева Е.М.</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">5</td>
+                                <td class="time-cell">15:40-17:10</td>
+                                <td class="subject-cell">История России
+Маклашкин С.С</td>
+                                <td class="room-cell">Ауд. 3101</td>
+                            </tr>
+                            
+                            <tr>
+                                <td class="pair-number">6</td>
+                                <td class="time-cell">17:20-18:50</td>
+                                <td class="subject-cell">История государства и 
+права России
+Сидоркин А.И.</td>
+                                <td class="room-cell">Ауд. 1136</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Пятница -->
+                <div class="day-schedule" data-day="friday">
+                    <h2 class="day-title">Пятница - Неделя 1</h2>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Время</th>
+                                <th>Предмет</th>
+                                <th>Аудитория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="pair-number">1</td>
+                                <td class="time-cell">8:30-10:00</td>
+                                <td class="subject-cell">лек. Физкультура и спорт
+доц. Егоров Д.Е.</td>
+                                <td class="room-cell">Ауд. 2156</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">2</td>
+                                <td class="time-cell">10:10-11:40</td>
+                                <td class="subject-cell">лек. Введение в специальность
+ст.пр. Скобеев С.Н.</td>
+                                <td class="room-cell">Ауд.  3124
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">3</td>
+                                <td class="time-cell">12:20-13:50</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">4</td>
+                                <td class="time-cell">14:00-15:30</td>
+                                <td class="subject-cell">лек. История государства и права России
+Сидоркин А.И</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">5</td>
+                                <td class="time-cell">15:40-17:10</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Неделя 2 -->
+            <div class="week-schedule" data-week="2" style="display: none;">
+                <!-- Понедельник -->
+                <div class="day-schedule active" data-day="monday">
+                    <h2 class="day-title">Понедельник - Неделя 2</h2>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Время</th>
+                                <th>Предмет</th>
+                                <th>Аудитория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           <tr>
+                                <td class="pair-number">1</td>
+                                <td class="time-cell">8:30-10:00</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">2</td>
+                                <td class="time-cell">10:10-11:40</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">3</td>
+                                <td class="time-cell">12:20-13:50</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">4</td>
+                                <td class="time-cell">14:00-15:30</td>
+                                <td class="subject-cell">ОСНОВЫ ВОЕННОЙ ПОДГОТОВКИ</td>
+                                <td class="room-cell">Московская область, городской округ Лосино-Петровский</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">5</td>
+                                <td class="time-cell">15:40-17:10</td>
+                                <td class="subject-cell">ОСНОВЫ ВОЕННОЙ ПОДГОТОВКИ</td>
+                                <td class="room-cell">Московская область, городской округ Лосино-Петровский</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Вторник -->
+                <div class="day-schedule" data-day="tuesday">
+                    <h2 class="day-title">Вторник - Неделя 2</h2>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Время</th>
+                                <th>Предмет</th>
+                                <th>Аудитория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="pair-number">1</td>
+                                <td class="time-cell">8:30-10:00</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">2</td>
+                                <td class="time-cell">10:10-11:40</td>
+                                <td class="subject-cell">лек. Введение в специальность
+ст.пр. Скобеев С.Н.</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">3</td>
+                                <td class="time-cell">12:20-13:50</td>
+                                <td class="subject-cell">лек. История России
+ст.пр. Кипнис Б.Г.</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">4</td>
+                                <td class="time-cell">14:00-15:30</td>
+                                <td class="subject-cell">Введение в специальность
+ст.пр. Скобеев С.Н.</td>
+                                <td class="room-cell">Ауд. 3134 </td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">5</td>
+                                <td class="time-cell">15:40-17:10</td>
+                                <td class="subject-cell">Правоохранительные
+органы
+доц. Виноградова О.Б</td>
+                                <td class="room-cell">Ауд. 3134</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Среда -->
+                <div class="day-schedule" data-day="wednesday">
+                    <h2 class="day-title">Среда - Неделя 2</h2>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Время</th>
+                                <th>Предмет</th>
+                                <th>Аудитория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             <tr>
+                                <td class="pair-number">1</td>
+                                <td class="time-cell">8:30-10:00</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">Ауд. - </td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">2</td>
+                                <td class="time-cell">10:10-11:40</td>
+                                <td class="subject-cell">История государства и
+права зарубежных стран
+доц.Гаприндашвили Р.Т.</td>
+                                <td class="room-cell">Ауд. 3101 </td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">3</td>
+                                <td class="time-cell">12:20-13:50</td>
+                                <td class="subject-cell">лек. Правоохранительные органы
+доц. Виноградова О.Б</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">4</td>
+                                <td class="time-cell">14:00-15:30</td>
+                                <td class="subject-cell">ФИЗКУЛЬТУРА И СПОРТ</td>
+                                <td class="room-cell">Спортзал</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">5</td>
+                                <td class="time-cell">15:40-17:10</td>
+                                <td class="subject-cell">Иностран.
+язык
+Королева</td>
+                                <td class="room-cell">Ауд. 2326 1 подгруппа [2 подгруппа 2328]</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">6</td>
+                                <td class="time-cell">17:20-18:50</td>
+                                <td class="subject-cell">История государства и 
+права России
+Сидоркин А.И</td>
+                                <td class="room-cell">Ауд. 3136 </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Четверг -->
+                <div class="day-schedule" data-day="thursday">
+                    <h2 class="day-title">Четверг - Неделя 2</h2>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Время</th>
+                                <th>Предмет</th>
+                                <th>Аудитория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="pair-number">1</td>
+                                <td class="time-cell">8:30-10:00</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">2</td>
+                                <td class="time-cell">10:10-11:40</td>
+                                <td class="subject-cell">лек. История государства и права зарубежных стран
+Гаприндашвили Р.Т.
+</td>
+                                <td class="room-cell">Ауд. 3130 </td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">3</td>
+                                <td class="time-cell">12:20-13:50</td>
+                                <td class="subject-cell">Теория государства и права
+Кожокарь И.П</td>
+                                <td class="room-cell">Ауд. 3134</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">4</td>
+                                <td class="time-cell">14:00-15:30</td>
+                                <td class="subject-cell">лек. Теория государства и права
+Кожокарь И.П.</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">5</td>
+                                <td class="time-cell">15:40-17:10</td>
+                                <td class="subject-cell">История России
+Маклашкин С.С.</td>
+                                <td class="room-cell">Ауд. 3101</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Пятница -->
+                <div class="day-schedule" data-day="friday">
+                    <h2 class="day-title">Пятница - Неделя 2</h2>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Время</th>
+                                <th>Предмет</th>
+                                <th>Аудитория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           <tr>
+                                <td class="pair-number">1</td>
+                                <td class="time-cell">8:30-10:00</td>
+                                <td class="subject-cell">ФИЗКУЛЬТУРА И СПОРТ</td>
+                                <td class="room-cell">Спортзал</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">2</td>
+                                <td class="time-cell">10:10-11:40</td>
+                                <td class="subject-cell">Юридическая психология
+доц. Борисова М.В.</td>
+                                <td class="room-cell">Ауд. 2315
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">3</td>
+                                <td class="time-cell">12:20-13:50</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">4</td>
+                                <td class="time-cell">14:00-15:30</td>
+                                <td class="subject-cell">лек. Русский язык и деловая коммуникация
+доц. Антонова Е.Н</td>
+                                <td class="room-cell">Ауд. 3130</td>
+                            </tr>
+                            <tr>
+                                <td class="pair-number">5</td>
+                                <td class="time-cell">15:40-17:10</td>
+                                <td class="subject-cell">-</td>
+                                <td class="room-cell">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Расписание минета Артура и сиськи Вики в тгк | Для группы юр-F*UCK</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const weekTabs = document.querySelectorAll('.week-tab');
+            const weekSchedules = document.querySelectorAll('.week-schedule');
+
+            weekTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const week = this.getAttribute('data-week');
+                    
+                    weekTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    weekSchedules.forEach(schedule => {
+                        schedule.style.display = schedule.getAttribute('data-week') === week ? 'block' : 'none';
+                    });
+                });
+            });
+
+            const dayTabs = document.querySelectorAll('.day-tab');
+            
+            dayTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const day = this.getAttribute('data-day');
+                    const activeWeek = document.querySelector('.week-tab.active').getAttribute('data-week');
+                    const currentWeekSchedule = document.querySelector(`.week-schedule[data-week="${activeWeek}"]`);
+                    
+
+                    dayTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const daySchedules = currentWeekSchedule.querySelectorAll('.day-schedule');
+                    daySchedules.forEach(schedule => {
+                        schedule.classList.remove('active');
+                        if (schedule.getAttribute('data-day') === day) {
+                            schedule.classList.add('active');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
